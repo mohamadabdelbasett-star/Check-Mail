@@ -2,31 +2,33 @@ name: Check Mail Bot
 
 on:
   schedule:
-    # 12 ظهراً بتوقيت مصر (توقيت جرينتش +2 شتاءً أو +3 صيفاً)
-    # لتشغيله في تمام الساعة 10:00 صباحاً بتوقيت UTC ليطابق 12 ظهراً بتوقيت مصر الصيفي
-    - cron: '0 10 * * *'
-  workflow_dispatch:
+    # بيشتغل كل 15 دقيقة (عشان يسمع كلمة check reply اللي هتكتبها)
+    - cron: '*/15 * * * *'
+    # بيشتغل مرة واحدة الساعة 12 الضهر بتوقيت القاهرة (بنسيب توقيت السيرفر UTC)
+    - cron: '0 10 * * *' 
+  workflow_dispatch: # للتشغيل اليدوي من صفحة جيتهاب
 
 jobs:
-  run-bot:
+  check-email:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
 
       - name: Install dependencies
-        run: |
-          pip install requests
+        run: pip install requests
 
-      - name: Run bot
+      - name: Run Bot
         env:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        run: |
-          python bot.py
-
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # لو السيرفر شغّل الملف الساعة 10 UTC (اللي هي 12 الضهر بتوقيت مصر) هيبعت تقرير
+          IS_NOON: ${{ github.event.schedule == '0 10 * * *' }}
+        run: python bot.py
