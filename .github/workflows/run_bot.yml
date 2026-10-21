@@ -1,0 +1,32 @@
+name: Check Mail Bot
+
+on:
+  schedule:
+    # 12 ظهراً بتوقيت مصر (توقيت جرينتش +2 شتاءً أو +3 صيفاً)
+    # لتشغيله في تمام الساعة 10:00 صباحاً بتوقيت UTC ليطابق 12 ظهراً بتوقيت مصر الصيفي
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run bot
+        env:
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python bot.py
+
