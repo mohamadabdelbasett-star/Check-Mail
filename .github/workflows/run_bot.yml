@@ -2,11 +2,11 @@ name: Check Mail Bot
 
 on:
   schedule:
-    # بيشتغل كل 15 دقيقة (عشان يسمع كلمة check reply اللي هتكتبها)
+    # بيشتغل كل 15 دقيقة (عشان يسمع كلمة check reply)
     - cron: '*/15 * * * *'
-    # بيشتغل مرة واحدة الساعة 12 الضهر بتوقيت القاهرة (بنسيب توقيت السيرفر UTC)
+    # بيشتغل مرة واحدة الساعة 12 الضهر بتوقيت القاهرة (10 الصبح UTC)
     - cron: '0 10 * * *' 
-  workflow_dispatch: # للتشغيل اليدوي من صفحة جيتهاب
+  workflow_dispatch: # للتشغيل اليدوي من جيتهاب
 
 jobs:
   check-email:
@@ -29,6 +29,6 @@ jobs:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          # لو السيرفر شغّل الملف الساعة 10 UTC (اللي هي 12 الضهر بتوقيت مصر) هيبعت تقرير
+          # السطر ده هو اللي بيقول للكود إن الوقت دلوقتي 12 الضهر
           IS_NOON: ${{ github.event.schedule == '0 10 * * *' }}
         run: python bot.py
