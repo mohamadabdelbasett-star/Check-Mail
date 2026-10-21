@@ -11,7 +11,6 @@ EMAIL_USER = "mohamad.abdulbaset@gmail.com"
 EMAIL_PASS = os.environ.get("EMAIL_PASS")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-IS_NOON = os.environ.get("IS_NOON") == "true"
 
 def decode_mime_header(header_value):
     if not header_value:
@@ -35,30 +34,11 @@ def send_telegram_message(message):
     }
     try:
         requests.post(url, json=payload, timeout=10)
+        print("Telegram sent ✔")
     except Exception as e:
         print(f"Telegram error: {e}")
 
-def check_telegram_command():
-    """دالة بتشوف لو إنت كتبت check reply في تليجرام"""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
-    try:
-        r = requests.get(url, timeout=10)
-        data = r.json()
-        if data.get("ok"):
-            for update in data["result"]:
-                if "message" in update and "text" in update["message"]:
-                    text = update["message"]["text"].strip().lower()
-                    if text == "check reply":
-                        update_id = update["update_id"]
-                        # مسح الرسالة عشان ميتكررش
-                        requests.get(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={update_id + 1}", timeout=10)
-                        return True
-    except Exception as e:
-        print(f"Telegram Check Error: {e}")
-    return False
-
 def generate_report():
-    """دالة بتجيب الإيميلات اللي مأخدتش رد وتبعت التقرير"""
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com") 
         mail.login(EMAIL_USER, EMAIL_PASS)
@@ -68,6 +48,7 @@ def generate_report():
             send_telegram_message("❌ لم يتم العثور على فولدر 'Check Reply'.")
             return
         
+        # بندور على الإيميلات اللي مأخدتش رد
         status, messages = mail.search(None, 'UNANSWERED')
         ids = messages[0].split()
         
@@ -110,9 +91,5 @@ def generate_report():
         send_telegram_message(f"❌ حدث خطأ:\n{e}")
 
 if __name__ == "__main__":
-    user_requested = check_telegram_command()
-    
-    if user_requested or IS_NOON:
-        generate_report()
-    else:
-        print("No command and not noon. Skipping.")
+    # البوت دلوقتي بيشتغل علطول لما يتشغل (سواء يدوي أو الساعة 12)
+    generate_report()
